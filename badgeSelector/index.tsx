@@ -1,4 +1,5 @@
 import { Devs } from "@utils/constants";
+import definePlugin, { OptionType } from "@utils/types";
 import { findStoreLazy } from "@webpack";
 import { Toasts, useState, useEffect } from "@webpack/common";
 import * as DataStore from "@api/DataStore";
