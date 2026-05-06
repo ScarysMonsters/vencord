@@ -1,41 +1,40 @@
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { findStoreLazy } from "@webpack";
+import { addProfileBadge, removeProfileBadge } from "@api/Badges";
 import { Toasts, useState, useEffect } from "@webpack/common";
 import * as DataStore from "@api/DataStore";
 
-const UserProfileStore = findStoreLazy("UserProfileStore");
-const BADGE_DATA_KEY = "BadgeSelector_v2_data";
+var BADGE_DATA_KEY = "BadgeSelector_v2_data";
 
 function getNitroSinceDate(months) {
-    const currentDate = new Date();
-    const sinceDate = new Date(currentDate);
+    var currentDate = new Date();
+    var sinceDate = new Date(currentDate);
     sinceDate.setMonth(currentDate.getMonth() - months);
-    const month = sinceDate.getMonth() + 1;
-    const day = sinceDate.getDate();
-    const year = sinceDate.getFullYear();
-    return `${month}/${day}/${year.toString().slice(-2)}`;
+    var month = sinceDate.getMonth() + 1;
+    var day = sinceDate.getDate();
+    var year = sinceDate.getFullYear();
+    return month + "/" + day + "/" + year.toString().slice(-2);
 }
 
 function getBoostSinceDate(months) {
-    const currentDate = new Date();
-    const sinceDate = new Date(currentDate);
+    var currentDate = new Date();
+    var sinceDate = new Date(currentDate);
     sinceDate.setMonth(currentDate.getMonth() - months);
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${monthNames[sinceDate.getMonth()]} ${sinceDate.getDate()}, ${sinceDate.getFullYear()}`;
+    var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return monthNames[sinceDate.getMonth()] + " " + sinceDate.getDate() + ", " + sinceDate.getFullYear();
 }
 
-const availableBadges = [
+var availableBadges = [
     { id: "staff", title: "Discord Staff", description: "Discord Staff", icon: "5e74e9b61934fc1f67c65515d1f7e60d", link: "https://discord.com/company" },
     { id: "premium", title: "Nitro Subscriber", description: "Subscriber since Dec 22, 2016", icon: "2ba85e8026a8614b640c2837bcdfe21b", link: "https://discord.com/settings/premium" },
-    { id: "premium_tenure_1_month_v2", title: "Nitro Bronze (1 month)", description: `Subscriber since ${getNitroSinceDate(1)}`, icon: "4f33c4a9c64ce221936bd256c356f91f", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_3_month_v2", title: "Nitro Silver (3 months)", description: `Subscriber since ${getNitroSinceDate(3)}`, icon: "4514fab914bdbfb4ad2fa23df76121a6", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_6_month_v2", title: "Nitro Gold (6 months)", description: `Subscriber since ${getNitroSinceDate(6)}`, icon: "2895086c18d5531d499862e41d1155a6", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_12_month_v2", title: "Nitro Platinum (1 year)", description: `Subscriber since ${getNitroSinceDate(12)}`, icon: "0334688279c8359120922938dcb1d6f8", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_24_month_v2", title: "Nitro Diamond (2 years)", description: `Subscriber since ${getNitroSinceDate(24)}`, icon: "0d61871f72bb9a33a7ae568c1fb4f20a", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_36_month_v2", title: "Nitro Emerald (3 years)", description: `Subscriber since ${getNitroSinceDate(36)}`, icon: "11e2d339068b55d3a506cff34d3780f3", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_60_month_v2", title: "Nitro Ruby (5 years)", description: `Subscriber since ${getNitroSinceDate(60)}`, icon: "cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4", link: "https://discord.com/nitro" },
-    { id: "premium_tenure_72_month_v2", title: "Nitro Opal (6+ years)", description: `Subscriber since ${getNitroSinceDate(72)}`, icon: "5b154df19c53dce2af92c9b61e6be5e2", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_1_month_v2", title: "Nitro Bronze (1 month)", description: "Subscriber since " + getNitroSinceDate(1), icon: "4f33c4a9c64ce221936bd256c356f91f", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_3_month_v2", title: "Nitro Silver (3 months)", description: "Subscriber since " + getNitroSinceDate(3), icon: "4514fab914bdbfb4ad2fa23df76121a6", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_6_month_v2", title: "Nitro Gold (6 months)", description: "Subscriber since " + getNitroSinceDate(6), icon: "2895086c18d5531d499862e41d1155a6", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_12_month_v2", title: "Nitro Platinum (1 year)", description: "Subscriber since " + getNitroSinceDate(12), icon: "0334688279c8359120922938dcb1d6f8", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_24_month_v2", title: "Nitro Diamond (2 years)", description: "Subscriber since " + getNitroSinceDate(24), icon: "0d61871f72bb9a33a7ae568c1fb4f20a", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_36_month_v2", title: "Nitro Emerald (3 years)", description: "Subscriber since " + getNitroSinceDate(36), icon: "11e2d339068b55d3a506cff34d3780f3", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_60_month_v2", title: "Nitro Ruby (5 years)", description: "Subscriber since " + getNitroSinceDate(60), icon: "cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4", link: "https://discord.com/nitro" },
+    { id: "premium_tenure_72_month_v2", title: "Nitro Opal (6+ years)", description: "Subscriber since " + getNitroSinceDate(72), icon: "5b154df19c53dce2af92c9b61e6be5e2", link: "https://discord.com/nitro" },
     { id: "partner", title: "Partnered Server Owner", description: "Partnered Server Owner", icon: "3f9748e53446a137a052f3454e2de41e", link: "https://discord.com/partners" },
     { id: "certified_moderator", title: "Moderator Programs Alumni", description: "Moderator Programs Alumni", icon: "fee1624003e2fee35cb398e125dc479b", link: "https://discord.com/safety" },
     { id: "hypesquad", title: "HypeSquad Events", description: "HypeSquad Events", icon: "bf01d1073931f921909045f3a39fd264", link: "https://discord.com/hypesquad" },
@@ -47,15 +46,15 @@ const availableBadges = [
     { id: "active_developer", title: "Active Developer", description: "Active Developer", icon: "6bdc42827a38498929a4920da12695d9", link: "https://support-dev.discord.com/hc/en-us/articles/10113997751447?ref=badge" },
     { id: "verified_developer", title: "Early Verified Bot Developer", description: "Early Verified Bot Developer", icon: "6df5892e0f35b051f8b61eace34f4967", link: "https://discord.com/developers" },
     { id: "early_supporter", title: "Early Supporter", description: "Early Supporter", icon: "7060786766c9c840eb3019e725d2b358", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl1", title: "Server Boost 1 Month", description: `Server boosting since ${getBoostSinceDate(1)}`, icon: "51040c70d4f20a921ad6674ff86fc95c", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl2", title: "Server Boost 2 Months", description: `Server boosting since ${getBoostSinceDate(2)}`, icon: "0e4080d1d333bc7ad29ef6528b6f2fb7", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl3", title: "Server Boost 3 Months", description: `Server boosting since ${getBoostSinceDate(3)}`, icon: "72bed924410c304dbe3d00a6e593ff59", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl4", title: "Server Boost 6 Months", description: `Server boosting since ${getBoostSinceDate(6)}`, icon: "df199d2050d3ed4ebf84d64ae83989f8", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl5", title: "Server Boost 9 Months", description: `Server boosting since ${getBoostSinceDate(9)}`, icon: "996b3e870e8a22ce519b3a50e6bdd52f", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl6", title: "Server Boost 12 Months", description: `Server boosting since ${getBoostSinceDate(12)}`, icon: "991c9f39ee33d7537d9f408c3e53141e", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl7", title: "Server Boost 15 Months", description: `Server boosting since ${getBoostSinceDate(15)}`, icon: "cb3ae83c15e970e8f3d410bc62cb8b99", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl8", title: "Server Boost 18 Months", description: `Server boosting since ${getBoostSinceDate(18)}`, icon: "7142225d31238f6387d9f09efaa02759", link: "https://discord.com/settings/premium" },
-    { id: "guild_booster_lvl9", title: "Server Boost 24 Months", description: `Server boosting since ${getBoostSinceDate(24)}`, icon: "ec92202290b48d0879b7413d2dde3bab", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl1", title: "Server Boost 1 Month", description: "Server boosting since " + getBoostSinceDate(1), icon: "51040c70d4f20a921ad6674ff86fc95c", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl2", title: "Server Boost 2 Months", description: "Server boosting since " + getBoostSinceDate(2), icon: "0e4080d1d333bc7ad29ef6528b6f2fb7", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl3", title: "Server Boost 3 Months", description: "Server boosting since " + getBoostSinceDate(3), icon: "72bed924410c304dbe3d00a6e593ff59", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl4", title: "Server Boost 6 Months", description: "Server boosting since " + getBoostSinceDate(6), icon: "df199d2050d3ed4ebf84d64ae83989f8", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl5", title: "Server Boost 9 Months", description: "Server boosting since " + getBoostSinceDate(9), icon: "996b3e870e8a22ce519b3a50e6bdd52f", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl6", title: "Server Boost 12 Months", description: "Server boosting since " + getBoostSinceDate(12), icon: "991c9f39ee33d7537d9f408c3e53141e", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl7", title: "Server Boost 15 Months", description: "Server boosting since " + getBoostSinceDate(15), icon: "cb3ae83c15e970e8f3d410bc62cb8b99", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl8", title: "Server Boost 18 Months", description: "Server boosting since " + getBoostSinceDate(18), icon: "7142225d31238f6387d9f09efaa02759", link: "https://discord.com/settings/premium" },
+    { id: "guild_booster_lvl9", title: "Server Boost 24 Months", description: "Server boosting since " + getBoostSinceDate(24), icon: "ec92202290b48d0879b7413d2dde3bab", link: "https://discord.com/settings/premium" },
     { id: "legacy_username", title: "Legacy Username", description: "Originally known as their old username", icon: "6de6d34650760ba5551a79732e98ed60", link: "https://discord.com" },
     { id: "quest_completed", title: "Quest Completer", description: "Completed a Quest", icon: "7d9ae358c8c5e118768335dbe68b4fb8", link: "https://discord.com/settings/inventory" },
     { id: "bot_commands", title: "Supports Commands", description: "Supports Commands", icon: "6f9e37f9029ff57aef81db857890005e", link: "https://discord.com/blog/welcome-to-the-new-era-of-discord-apps?ref=badge" },
@@ -66,12 +65,12 @@ const availableBadges = [
 
 // ─── Data Layer ─────────────────────────────────────────────────
 
-let badgeData = {};
-let originalGetUserProfile = null;
+var badgeData = {};
+var registeredBadgeRef = null;
 
 async function loadData() {
     try {
-        const saved = await DataStore.get(BADGE_DATA_KEY);
+        var saved = await DataStore.get(BADGE_DATA_KEY);
         return saved || {};
     } catch (e) {
         console.error("[BadgeSelector] Failed to load data:", e);
@@ -90,51 +89,6 @@ async function saveData(data) {
 
 function getBadgeInfo(id) {
     return availableBadges.find(function(b) { return b.id === id; });
-}
-
-function injectBadges(profile, userId) {
-    var config = badgeData[userId];
-    if (!config || (!config.added.length && !config.removed.length && !config.custom.length)) {
-        return profile;
-    }
-
-    var badges = Array.isArray(profile.badges) ? profile.badges.slice() : [];
-
-    // Remove hidden real badges
-    if (config.removed.length > 0) {
-        var removedSet = new Set(config.removed);
-        badges = badges.filter(function(b) { return !removedSet.has(b.id); });
-    }
-
-    // Add fake badges from availableBadges list
-    for (var i = 0; i < config.added.length; i++) {
-        var badgeId = config.added[i];
-        var exists = badges.some(function(b) { return b.id === badgeId; });
-        if (!exists) {
-            var info = getBadgeInfo(badgeId);
-            if (info) {
-                badges.push({ id: info.id, description: info.description, icon: info.icon, link: info.link });
-            }
-        }
-    }
-
-    // Add fully custom badges
-    for (var j = 0; j < config.custom.length; j++) {
-        var custom = config.custom[j];
-        var cExists = badges.some(function(b) { return b.id === custom.id; });
-        if (!cExists) {
-            badges.push({ id: custom.id, description: custom.description, icon: custom.icon, link: custom.link });
-        }
-    }
-
-    // Sort by availableBadges order, custom badges at end
-    badges.sort(function(a, b) {
-        var orderA = availableBadges.findIndex(function(ab) { return ab.id === a.id; });
-        var orderB = availableBadges.findIndex(function(ab) { return ab.id === b.id; });
-        return (orderA === -1 ? 9999 : orderA) - (orderB === -1 ? 9999 : orderB);
-    });
-
-    return Object.assign({}, profile, { badges: badges });
 }
 
 // ─── Settings UI Component ───────────────────────────────────────
@@ -230,14 +184,14 @@ var BadgeManagerComponent = function() {
     var sUserId = { color: "var(--header-primary, #f2f3f5)", fontSize: "14px", fontFamily: "monospace", fontWeight: 600 };
     var sMeta = { color: "var(--text-muted, #949ba4)", fontSize: "12px", marginLeft: "8px", fontWeight: 400 };
     var sExpanded = { padding: "12px", background: "var(--background-secondary-alt, #1e1f22)", borderRadius: "6px", marginBottom: "8px" };
-    var sActions = { display: "flex", gap: "6px", marginBottom: "12px", flexWrap: "wrap" as any };
+    var sActions = { display: "flex", gap: "6px", marginBottom: "12px", flexWrap: "wrap" };
     var sBadgeGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "3px", maxHeight: "320px", overflowY: "auto" };
     var sBadge = { display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", borderRadius: "4px", cursor: "pointer" };
-    var sBadgeIcon = { width: "20px", height: "20px", borderRadius: "3px", imageRendering: "crisp-edges" as any };
-    var sBadgeName = { fontSize: "12px", color: "var(--text-normal, #dbdee1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as any };
+    var sBadgeIcon = { width: "20px", height: "20px", borderRadius: "3px", imageRendering: "crisp-edges" };
+    var sBadgeName = { fontSize: "12px", color: "var(--text-normal, #dbdee1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
     var sBadgeStatus = { fontSize: "10px", fontWeight: 700 };
-    var sEmpty = { color: "var(--text-muted, #949ba4)", textAlign: "center" as any, padding: "24px", fontSize: "14px", lineHeight: "1.6" };
-    var sSectionTitle = { color: "var(--header-primary, #f2f3f5)", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" as any, letterSpacing: ".5px", marginBottom: "10px" };
+    var sEmpty = { color: "var(--text-muted, #949ba4)", textAlign: "center", padding: "24px", fontSize: "14px", lineHeight: "1.6" };
+    var sSectionTitle = { color: "var(--header-primary, #f2f3f5)", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", marginBottom: "10px" };
     var sHint = { color: "var(--text-muted, #949ba4)", fontSize: "11px", marginTop: "6px", lineHeight: "1.5" };
 
     return React.createElement("div", { style: sContainer },
@@ -264,10 +218,8 @@ var BadgeManagerComponent = function() {
                 var isExpanded = expandedUser === uid;
                 var addedCount = config ? config.added.length : 0;
                 var removedCount = config ? config.removed.length : 0;
-                var customCount = config ? config.custom.length : 0;
 
                 return React.createElement("div", { key: uid, style: { marginBottom: "8px" } },
-                    // User header (collapsible)
                     React.createElement("div", {
                         style: sUserHeader,
                         onClick: function() { setExpandedUser(isExpanded ? null : uid); }
@@ -276,8 +228,7 @@ var BadgeManagerComponent = function() {
                             React.createElement("span", { style: sUserId }, uid),
                             React.createElement("span", { style: sMeta },
                                 "(" + addedCount + " added" +
-                                (removedCount ? ", " + removedCount + " hidden" : "") +
-                                (customCount ? ", " + customCount + " custom" : "") + ")"
+                                (removedCount ? ", " + removedCount + " hidden" : "") + ")"
                             )
                         ),
                         React.createElement("button", {
@@ -286,9 +237,7 @@ var BadgeManagerComponent = function() {
                             title: "Remove user"
                         }, "\u00D7")
                     ),
-                    // Expanded content
                     isExpanded && React.createElement("div", { style: sExpanded },
-                        // Action buttons
                         React.createElement("div", { style: sActions },
                             React.createElement("button", { style: sBtn, onClick: function() { giveAll(uid); } }, "Give All Badges"),
                             React.createElement("button", { style: sBtnDanger, onClick: function() { removeAll(uid); } }, "Remove All"),
@@ -297,7 +246,6 @@ var BadgeManagerComponent = function() {
                         React.createElement("div", { style: sHint },
                             "Left-click: add/remove fake badge  |  Right-click: hide/show real badge"
                         ),
-                        // Badge grid
                         React.createElement("div", { style: sBadgeGrid },
                             availableBadges.map(function(badge) {
                                 var isAdded = config && config.added.includes(badge.id);
@@ -355,37 +303,62 @@ export default definePlugin({
     async start() {
         badgeData = await loadData();
 
-        var store = findStoreLazy("UserProfileStore");
-        if (!store || typeof store.getUserProfile !== "function") {
-            console.error("[BadgeSelector] UserProfileStore not available");
-            return;
-        }
+        // Register badge provider using Vencord's Badge API
+        // getBadges is called on every profile render, reads from badgeData dynamically
+        registeredBadgeRef = {
+            id: "badge_selector_provider",
+            description: "BadgeSelector Provider",
+            // position: 0 = START (add at beginning of badge list)
+            position: 0,
+            getBadges: function(userInfo) {
+                var userId = userInfo.userId;
+                var config = badgeData[userId];
+                if (!config || !config.added || config.added.length === 0) return [];
 
-        originalGetUserProfile = store.getUserProfile;
+                var result = [];
+                for (var i = 0; i < config.added.length; i++) {
+                    var badgeId = config.added[i];
+                    var info = getBadgeInfo(badgeId);
+                    if (info) {
+                        result.push({
+                            id: "bs_" + info.id,
+                            description: info.title,
+                            iconSrc: "https://cdn.discordapp.com/badge-icons/" + info.icon + ".png",
+                            link: info.link,
+                            key: "bs_" + info.id,
+                            props: {
+                                style: { width: "22px", height: "22px", borderRadius: "3px", imageRendering: "crisp-edges" }
+                            }
+                        });
+                    }
+                }
 
-        store.getUserProfile = function(userId) {
-            var result = originalGetUserProfile(userId);
+                // Add custom badges
+                if (config.custom && config.custom.length > 0) {
+                    for (var j = 0; j < config.custom.length; j++) {
+                        var custom = config.custom[j];
+                        result.push({
+                            id: "bs_custom_" + custom.id,
+                            description: custom.description,
+                            iconSrc: custom.icon,
+                            link: custom.link,
+                            key: "bs_custom_" + custom.id
+                        });
+                    }
+                }
 
-            // Handle async (Promise) result
-            if (result && typeof result.then === "function") {
-                return result.then(function(profile) {
-                    if (!profile) return profile;
-                    return injectBadges(profile, userId);
-                });
+                return result;
             }
-
-            if (!result) return result;
-            return injectBadges(result, userId);
         };
 
-        console.log("[BadgeSelector] Started - managing badges for " + Object.keys(badgeData).length + " user(s)");
+        addProfileBadge(registeredBadgeRef);
+        console.log("[BadgeSelector] Started - using Badge API for " + Object.keys(badgeData).length + " user(s)");
     },
 
     stop() {
-        if (originalGetUserProfile) {
-            var store = findStoreLazy("UserProfileStore");
-            if (store) store.getUserProfile = originalGetUserProfile;
-            originalGetUserProfile = null;
+        if (registeredBadgeRef) {
+            removeProfileBadge(registeredBadgeRef);
+            registeredBadgeRef = null;
         }
         badgeData = {};
         console.log("[BadgeSelector] Stopped");
